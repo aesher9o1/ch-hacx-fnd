@@ -18,7 +18,7 @@ export function Editor() {
   }, []);
 
   return (
-    <>
+    <Box px={8}>
       <Box id="toolbar">
         <select className="ql-size">
           <option value="small"></option>
@@ -44,7 +44,7 @@ export function Editor() {
           <button className="ql-align" />
         </Box>
       </Box>
-      <div ref={editorRef} />
-    </>
+      <Box ref={editorRef} pt={1} />
+    </Box>
   );
 }
