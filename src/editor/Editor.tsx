@@ -2,17 +2,40 @@ import { useEffect, useRef } from "react";
 import Quill from "quill";
 import { Box } from "@mui/system";
 import { SIZES, COLORS } from "../Global";
+import * as Y from "yjs";
+import { QuillBinding } from "y-quill";
+import { WebsocketProvider } from "y-websocket";
+import QuillCursors from "quill-cursors";
 
 export function Editor() {
   const editorRef = useRef(null);
 
   useEffect(() => {
     setTimeout(() => {
-      new Quill(editorRef.current as any, {
-        theme: "snow",
-        modules: {
-          toolbar: "#toolbar",
-        },
+      Quill.register("modules/cursors", QuillCursors);
+
+      window.addEventListener("load", () => {
+        const ydoc = new Y.Doc();
+        const provider = new WebsocketProvider(
+          "ws://localhost:3312",
+          "velotio-demo",
+          ydoc
+        );
+        const type = ydoc.getText("Velotio-Blog");
+
+        const editor = new Quill(editorRef.current as any, {
+          theme: "snow",
+          modules: {
+            cursors: true,
+            toolbar: "#toolbar",
+            history: {
+              userOnly: true,
+            },
+          },
+        });
+
+        const binding = new QuillBinding(type, editor, provider.awareness);
+        provider.connect();
       });
     }, 0);
   }, []);
