@@ -1,16 +1,46 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
+import reportWebVitals from "./reportWebVitals";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  document.getElementById("root") as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <App />
+    <ThemeProvider
+      theme={createTheme({
+        palette: {
+          mode: "light",
+          primary: {
+            main: "#499557",
+            dark: "#308140",
+            contrastText: "#fff",
+          },
+        },
+
+        components: {
+          MuiButton: {
+            styleOverrides: {
+              root: {
+                borderRadius: "8px",
+                textTransform: "none",
+              },
+            },
+          },
+        },
+        typography: {
+          fontFamily: "'Open Sans', sans-serif",
+          allVariants: {
+            color: "#2d2d2d",
+          },
+        },
+      })}
+    >
+      <App />
+    </ThemeProvider>
   </React.StrictMode>
 );
 

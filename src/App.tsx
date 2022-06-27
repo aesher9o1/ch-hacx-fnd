@@ -1,25 +1,39 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import styled from "@emotion/styled";
+import { Grid } from "@mui/material";
+import { Box } from "@mui/system";
+import "./App.css";
+import { Chat } from "./chat/Chat";
+import { Editor } from "./editor/Editor";
+import { SIZES, COLORS } from "./Global";
+import { NavBar } from "./Navbar";
+
+const Container = styled(Grid)({
+  padding: "1.5em 2em",
+});
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <Box display="flex" flexDirection="column" height="98.7vh">
+      <NavBar />
+
+      <Grid container style={{ height: "100%" }}>
+        <Container item xs={9}>
+          <Editor />
+        </Container>
+        <Container
+          item
+          xs={3}
+          sx={{
+            borderLeft: 1,
+            borderWidth: SIZES.border,
+            borderColor: COLORS.border,
+            paddingLeft: "1.5em",
+          }}
         >
-          Learn React
-        </a>
-      </header>
-    </div>
+          <Chat />
+        </Container>
+      </Grid>
+    </Box>
   );
 }
 
