@@ -6,6 +6,7 @@ import { Chat } from "./chat/Chat";
 import { Editor } from "./editor/Editor";
 import { SIZES, COLORS } from "./Global";
 import { NavBar } from "./Navbar";
+import { socket, SocketContext } from "./socket.io";
 
 const Container = styled(Grid)({
   padding: "1.5em 2em",
@@ -17,21 +18,23 @@ function App() {
       <NavBar />
 
       <Grid container style={{ height: "100%" }}>
-        <Container item xs={9}>
-          <Editor />
-        </Container>
-        <Container
-          item
-          xs={3}
-          sx={{
-            borderLeft: 1,
-            borderWidth: SIZES.border,
-            borderColor: COLORS.border,
-            paddingLeft: "1.5em",
-          }}
-        >
-          <Chat />
-        </Container>
+        <SocketContext.Provider value={socket}>
+          <Container item xs={9}>
+            <Editor />
+          </Container>
+          <Container
+            item
+            xs={3}
+            sx={{
+              borderLeft: 1,
+              borderWidth: SIZES.border,
+              borderColor: COLORS.border,
+              paddingLeft: "1.5em",
+            }}
+          >
+            <Chat />
+          </Container>
+        </SocketContext.Provider>
       </Grid>
     </Box>
   );

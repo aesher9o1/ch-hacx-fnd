@@ -1,73 +1,98 @@
-import { useEffect, useRef } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import Quill from "quill";
 import { Box } from "@mui/system";
 import { SIZES, COLORS } from "../Global";
 import * as Y from "yjs";
+import { Awareness } from "y-protocols/awareness";
 import { QuillBinding } from "y-quill";
-import { WebsocketProvider } from "y-websocket";
 import QuillCursors from "quill-cursors";
+import { SocketContext } from "../socket.io";
+import { SyncModal } from "./SyncModal";
+import { ROOM, EVENTS } from "./events";
 
 export function Editor() {
   const editorRef = useRef(null);
+  const socket = useContext(SocketContext);
+  const [isSyncedWithServer, syncWithServer] = useState(false);
+  const ydoc = new Y.Doc();
 
   useEffect(() => {
     setTimeout(() => {
       Quill.register("modules/cursors", QuillCursors);
 
-      window.addEventListener("load", () => {
-        const ydoc = new Y.Doc();
-        const provider = new WebsocketProvider(
-          "ws://localhost:3312",
-          "velotio-demo",
-          ydoc
-        );
-        const type = ydoc.getText("Velotio-Blog");
+      const type = ydoc.getText("quill");
 
-        const editor = new Quill(editorRef.current as any, {
-          theme: "snow",
-          modules: {
-            cursors: true,
-            toolbar: "#toolbar",
-            history: {
-              userOnly: true,
-            },
+      const editor = new Quill(editorRef.current as any, {
+        theme: "snow",
+        modules: {
+          cursors: true,
+          toolbar: "#toolbar",
+          history: {
+            userOnly: true,
           },
-        });
+        },
+      });
 
-        const binding = new QuillBinding(type, editor, provider.awareness);
-        provider.connect();
+      const awareness = new Awareness(ydoc);
+      new QuillBinding(type, editor, awareness);
+
+      //socket.io events
+      socket.on(
+        EVENTS.RECEIVE,
+        ({ actions, roomname }: { actions: any; roomname: string }) => {
+          Y.applyUpdate(ydoc, new Uint8Array(actions));
+        }
+      );
+
+      ydoc.on("update", (update: Uint8Array, origin) => {
+        // const encoder = createEncoder();
+        // writeVarUint(encoder, STATE.SENT);
+        // writeUpdate(encoder, update);
+        // console.log(toUint8Array(encoder));
+        // socket.emit(EVENTS.SEND, {
+        //   actions: toUint8Array(encoder),
+        //   roomName: ROOM,
+        // });
+
+        socket.emit(EVENTS.SEND, {
+          actions: update,
+          roomName: ROOM,
+        });
       });
     }, 0);
   }, []);
 
   return (
-    <Box px={8}>
-      <Box id="toolbar">
-        <select className="ql-size">
-          <option value="small"></option>
-          <option selected></option>
-          <option value="large"></option>
-          <option value="huge"></option>
-        </select>
+    <>
+      <SyncModal doc={ydoc} />
+      <Box px={8}>
+        <Box id="toolbar">
+          <select className="ql-size" defaultValue={"normal"}>
+            <option value="small"></option>
+            <option value="normal"></option>
+            <option value="large"></option>
+            <option value="huge"></option>
+          </select>
 
-        <Box
-          px={"130px"}
-          sx={{
-            borderRight: 1,
-            borderWidth: SIZES.border,
-            borderColor: COLORS.border,
-          }}
-        >
-          <button className="ql-bold" />
-          <button className="ql-italic" />
-          <button className="ql-underline" />
+          <Box
+            px={"130px"}
+            sx={{
+              borderRight: 1,
+              borderWidth: SIZES.border,
+              borderColor: COLORS.border,
+            }}
+          >
+            <button className="ql-bold" />
+            <button className="ql-italic" />
+            <button className="ql-underline" />
+          </Box>
+          <Box px={"250px"}>
+            <button className="ql-link" />
+            <button className="ql-align" />
+          </Box>
         </Box>
-        <Box px={"250px"}>
-          <button className="ql-link" />
-          <button className="ql-align" />
-        </Box>
+        <Box ref={editorRef} pt={1} />
       </Box>
-      <Box ref={editorRef} pt={1} />
-    </Box>
+    </>
   );
 }
