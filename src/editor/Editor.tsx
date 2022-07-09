@@ -16,7 +16,6 @@ export function Editor() {
 
   const editorRef = useRef(null);
   const socket = useContext(SocketContext);
-  const [isSyncedWithServer, syncWithServer] = useState(false);
   const setsyncDebounced = useRef(
     _.debounce(() => {
       console.log("sending checkpoint...");
