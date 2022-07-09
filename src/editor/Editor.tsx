@@ -9,11 +9,24 @@ import QuillCursors from "quill-cursors";
 import { SocketContext } from "../socket.io";
 import { SyncModal } from "./SyncModal";
 import { ROOM, EVENTS } from "./events";
+import _ from "lodash";
 
 export function Editor() {
+  const SYNC_INTERVAL_MS = 2000;
+
   const editorRef = useRef(null);
   const socket = useContext(SocketContext);
   const [isSyncedWithServer, syncWithServer] = useState(false);
+  const setsyncDebounced = useRef(
+    _.debounce(() => {
+      console.log("sending checkpoint...");
+      socket.emit(EVENTS.CHECKPOINT, {
+        actions: Y.encodeStateAsUpdateV2(ydoc),
+        roomName: ROOM,
+      });
+    }, SYNC_INTERVAL_MS)
+  );
+
   const ydoc = new Y.Doc();
 
   useEffect(() => {
@@ -44,7 +57,7 @@ export function Editor() {
         }
       );
 
-      ydoc.on("update", (update: Uint8Array, origin) => {
+      ydoc.on("update", (update: Uint8Array, origin, doc) => {
         // const encoder = createEncoder();
         // writeVarUint(encoder, STATE.SENT);
         // writeUpdate(encoder, update);
@@ -58,6 +71,8 @@ export function Editor() {
           actions: update,
           roomName: ROOM,
         });
+
+        setsyncDebounced.current();
       });
     }, 0);
   }, []);
