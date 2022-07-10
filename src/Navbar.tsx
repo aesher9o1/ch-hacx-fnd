@@ -66,6 +66,9 @@ export function NavBar() {
               </Box>
 
               <Box display="flex" justifyContent="center" alignItems="center">
+                <Typography mr={3} id="client">
+                  Origin
+                </Typography>
                 <Button variant="contained" disableElevation size="medium">
                   Share
                 </Button>

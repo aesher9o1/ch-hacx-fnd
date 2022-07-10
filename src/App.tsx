@@ -2,14 +2,12 @@ import styled from "@emotion/styled";
 import { Grid } from "@mui/material";
 import { Box } from "@mui/system";
 import "./App.css";
-import { Chat } from "./chat/Chat";
 import { Editor } from "./editor/Editor";
-import { SIZES, COLORS } from "./Global";
 import { NavBar } from "./Navbar";
 import { socket, SocketContext } from "./socket.io";
 
 const Container = styled(Grid)({
-  padding: "1.5em 2em",
+  paddingTop: "1.5em",
 });
 
 function App() {
@@ -19,10 +17,10 @@ function App() {
 
       <Grid container style={{ height: "100%" }}>
         <SocketContext.Provider value={socket}>
-          <Container item xs={9}>
+          <Container item xs={12}>
             <Editor />
           </Container>
-          <Container
+          {/* <Container
             item
             xs={3}
             sx={{
@@ -33,7 +31,7 @@ function App() {
             }}
           >
             <Chat />
-          </Container>
+          </Container> */}
         </SocketContext.Provider>
       </Grid>
     </Box>

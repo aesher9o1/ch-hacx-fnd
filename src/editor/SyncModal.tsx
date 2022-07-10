@@ -22,7 +22,6 @@ export function SyncModal({ doc }: { doc: Y.Doc }) {
   useEffect(() => {
     socket.on(EVENTS.SYNC, ({ sync, data }: { sync: boolean; data?: any }) => {
       console.log("syncing to server..."); //should receive array buffer
-      console.log(data);
       if (sync) {
         setOpen(false);
         if (data) {
