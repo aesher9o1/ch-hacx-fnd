@@ -1,8 +1,9 @@
 import { useContext, useEffect, useState } from "react";
 import { Typography, Fade, Modal, Box, Backdrop } from "@mui/material";
-import { SocketContext } from "../socket.io";
+import { sendUpdates, SocketContext } from "../socket.io";
 import { ROOM, EVENTS } from "./events";
 import * as Y from "yjs";
+import { Awareness, encodeAwarenessUpdate } from "y-protocols/awareness";
 
 const style = {
   position: "absolute" as "absolute",
@@ -15,7 +16,13 @@ const style = {
   p: 4,
 };
 
-export function SyncModal({ doc }: { doc: Y.Doc }) {
+export function SyncModal({
+  doc,
+  awareness,
+}: {
+  doc: Y.Doc;
+  awareness: Awareness;
+}) {
   const [open, setOpen] = useState(true);
   const socket = useContext(SocketContext);
 
@@ -27,6 +34,11 @@ export function SyncModal({ doc }: { doc: Y.Doc }) {
         if (data) {
           Y.applyUpdateV2(doc, new Uint8Array(data));
         }
+        const connectedClients = Array.from(awareness.getStates().keys());
+        sendUpdates(
+          undefined,
+          encodeAwarenessUpdate(awareness, connectedClients)
+        );
       }
     });
   }, []);

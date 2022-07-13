@@ -10,12 +10,23 @@ import {
 } from "y-protocols/awareness";
 import { QuillBinding } from "y-quill";
 import QuillCursors from "quill-cursors";
-import { SocketContext } from "../socket.io";
+import {
+  sendCheckpoint,
+  sendUpdates,
+  SocketContext,
+  UpdatePacket,
+} from "../socket.io";
 import { SyncModal } from "./SyncModal";
-import { ROOM, EVENTS, getRandomUserColor, isMobile } from "./events";
+import { EVENTS, getRandomUserColor, isMobile } from "./events";
 import _ from "lodash";
 
-export function Editor() {
+export function Editor({
+  ydoc,
+  awareness,
+}: {
+  ydoc: Y.Doc;
+  awareness: Awareness;
+}) {
   const SYNC_INTERVAL_MS = 2000;
 
   const editorRef = useRef(null);
@@ -24,14 +35,9 @@ export function Editor() {
   const setsyncDebounced = useRef(
     _.debounce(() => {
       console.log("sending checkpoint...");
-      socket.emit(EVENTS.CHECKPOINT, {
-        actions: Y.encodeStateAsUpdateV2(ydoc),
-        roomName: ROOM,
-      });
+      sendCheckpoint(Y.encodeStateAsUpdateV2(ydoc));
     }, SYNC_INTERVAL_MS)
   );
-
-  const ydoc = new Y.Doc();
 
   useEffect(() => {
     setTimeout(() => {
@@ -51,34 +57,16 @@ export function Editor() {
         },
       });
 
-      const awareness = new Awareness(ydoc);
-
       awareness.setLocalStateField("user", {
         name: awareness.clientID,
         color: getRandomUserColor(),
       });
 
-      const clientId = document.getElementById("client");
-
-      if (clientId) clientId.innerHTML = awareness.clientID + "";
-
       new QuillBinding(type, editor, awareness);
 
-      // correctAwareness(awareness);
-
-      //socket.io events
       socket.on(
         EVENTS.RECEIVE,
-        ({
-          actions,
-          awarenessUpdate,
-          origin,
-        }: {
-          actions: any;
-          roomName: string;
-          awarenessUpdate: any;
-          origin: number;
-        }) => {
+        ({ actions, awarenessUpdate, origin }: UpdatePacket) => {
           if (awarenessUpdate) {
             applyAwarenessUpdate(
               awareness,
@@ -90,26 +78,17 @@ export function Editor() {
         }
       );
 
-      awareness.on("update", (awUpdate: any) => {
-        console.log(Array.from(awareness.getStates().keys()));
-        const conenctedClients = Array.from(awareness.getStates().keys());
-        // console.log(conenctedClients);
-        socket.emit(EVENTS.SEND, {
-          actions: null,
-          roomName: ROOM,
-          origin: socket.id,
-          awarenessUpdate: encodeAwarenessUpdate(awareness, conenctedClients),
-        });
+      awareness.on("update", () => {
+        const connectedClients = Array.from(awareness.getStates().keys());
+
+        sendUpdates(
+          undefined,
+          encodeAwarenessUpdate(awareness, connectedClients)
+        );
       });
 
       ydoc.on("update", (update: Uint8Array) => {
-        socket.emit(EVENTS.SEND, {
-          actions: update,
-          roomName: ROOM,
-          origin: socket.id,
-          awarenessUpdate: null,
-        });
-
+        sendUpdates(update);
         setsyncDebounced.current();
       });
     }, 0);
@@ -117,7 +96,7 @@ export function Editor() {
 
   return (
     <>
-      <SyncModal doc={ydoc} />
+      <SyncModal doc={ydoc} awareness={awareness} />
       <Box px={isMobile() ? 0 : 8}>
         <Box id="toolbar">
           <select className="ql-size" defaultValue={"normal"}>
