@@ -78,6 +78,10 @@ export function Editor({
         }
       );
 
+      socket.on("PROCESSED", (data) => {
+        console.log(data);
+      });
+
       awareness.on("update", () => {
         const connectedClients = Array.from(awareness.getStates().keys());
 

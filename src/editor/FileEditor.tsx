@@ -18,9 +18,7 @@ export function FileEditor() {
         accept="image/png, image/jpeg"
         onChange={({ target }) => {
           if (target.files) {
-            socket.emit("UPLOAD", target.files[0], (status: number) => {
-              console.log(status);
-            });
+            socket.emit("UPLOAD", target.files[0]);
           }
         }}
       />
