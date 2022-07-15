@@ -3,9 +3,6 @@ import React, { useContext, useRef } from "react";
 import { SocketContext } from "../socket.io";
 
 export function FileEditor() {
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(event);
-  };
   const inputRef = useRef<HTMLInputElement>(null);
   const socket = useContext(SocketContext);
 

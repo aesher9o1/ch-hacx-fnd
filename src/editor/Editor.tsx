@@ -40,63 +40,64 @@ export function Editor({
   );
 
   useEffect(() => {
-    setTimeout(() => {
-      Quill.register("modules/cursors", QuillCursors);
+    console.log("SOCKET ID:", socket.id, " YJS ID", ydoc.guid);
+    Quill.register("modules/cursors", QuillCursors);
 
-      // Define a shared text type on the document
-      const type = ydoc.getText("quill");
+    // Define a shared text type on the document
+    const type = ydoc.getText("quill");
 
-      const editor = new Quill(editorRef.current as any, {
-        theme: "snow",
-        modules: {
-          cursors: true,
-          toolbar: "#toolbar",
-          history: {
-            userOnly: true,
-          },
+    const editor = new Quill(editorRef.current as any, {
+      theme: "snow",
+      modules: {
+        cursors: true,
+        toolbar: "#toolbar",
+        history: {
+          userOnly: true,
         },
-      });
+      },
+    });
 
-      awareness.setLocalStateField("user", {
-        name: awareness.clientID,
-        color: getRandomUserColor(),
-      });
+    awareness.setLocalStateField("user", {
+      name: awareness.clientID,
+      color: getRandomUserColor(),
+    });
 
-      new QuillBinding(type, editor, awareness);
+    new QuillBinding(type, editor, awareness);
 
-      socket.on(
-        EVENTS.RECEIVE,
-        ({ actions, awarenessUpdate, origin }: UpdatePacket) => {
-          if (awarenessUpdate) {
-            applyAwarenessUpdate(
-              awareness,
-              new Uint8Array(awarenessUpdate),
-              origin
-            );
-          }
-          if (actions) Y.applyUpdate(ydoc, new Uint8Array(actions));
+    socket.on(
+      EVENTS.RECEIVE,
+      ({ actions, awarenessUpdate, origin }: UpdatePacket) => {
+        if (awarenessUpdate) {
+          applyAwarenessUpdate(
+            awareness,
+            new Uint8Array(awarenessUpdate),
+            origin
+          );
         }
+        if (actions) Y.applyUpdate(ydoc, new Uint8Array(actions));
+      }
+    );
+
+    socket.on("PROCESSED", (data) => {
+      console.log("processed");
+      editor.focus();
+      editor.insertText(0, data);
+    });
+
+    awareness.on("update", () => {
+      const connectedClients = Array.from(awareness.getStates().keys());
+
+      sendUpdates(
+        undefined,
+        encodeAwarenessUpdate(awareness, connectedClients)
       );
+    });
 
-      socket.on("PROCESSED", (data) => {
-        console.log(data);
-      });
-
-      awareness.on("update", () => {
-        const connectedClients = Array.from(awareness.getStates().keys());
-
-        sendUpdates(
-          undefined,
-          encodeAwarenessUpdate(awareness, connectedClients)
-        );
-      });
-
-      ydoc.on("update", (update: Uint8Array) => {
-        sendUpdates(update);
-        setsyncDebounced.current();
-      });
-    }, 0);
-  }, []);
+    ydoc.on("update", (update: Uint8Array) => {
+      sendUpdates(update);
+      setsyncDebounced.current();
+    });
+  }, [socket]);
 
   return (
     <>

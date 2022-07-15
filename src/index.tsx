@@ -9,39 +9,37 @@ const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
-  <React.StrictMode>
-    <ThemeProvider
-      theme={createTheme({
-        palette: {
-          mode: "light",
-          primary: {
-            main: "#499557",
-            dark: "#308140",
-            contrastText: "#fff",
-          },
+  <ThemeProvider
+    theme={createTheme({
+      palette: {
+        mode: "light",
+        primary: {
+          main: "#499557",
+          dark: "#308140",
+          contrastText: "#fff",
         },
+      },
 
-        components: {
-          MuiButton: {
-            styleOverrides: {
-              root: {
-                borderRadius: "8px",
-                textTransform: "none",
-              },
+      components: {
+        MuiButton: {
+          styleOverrides: {
+            root: {
+              borderRadius: "8px",
+              textTransform: "none",
             },
           },
         },
-        typography: {
-          fontFamily: "'Open Sans', sans-serif",
-          allVariants: {
-            color: "#2d2d2d",
-          },
+      },
+      typography: {
+        fontFamily: "'Open Sans', sans-serif",
+        allVariants: {
+          color: "#2d2d2d",
         },
-      })}
-    >
-      <App />
-    </ThemeProvider>
-  </React.StrictMode>
+      },
+    })}
+  >
+    <App />
+  </ThemeProvider>
 );
 
 // If you want your app to work offline and load faster, you can change

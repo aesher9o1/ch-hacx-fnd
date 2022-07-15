@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
-import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
-import { FileEditor } from "./editor/FileEditor";
+import { AppBar, Box, Toolbar, Typography } from "@mui/material";
+import { Canvas } from "./buttons/Canvas";
+import { FileEditor } from "./buttons/FileEditor";
 import { COLORS, SIZES } from "./Global";
 
 const Logo = styled.img({
@@ -68,6 +69,8 @@ export function NavBar() {
 
               <Box display="flex" justifyContent="center" alignItems="center">
                 <FileEditor />
+
+                <Canvas />
               </Box>
             </Box>
           </Box>
